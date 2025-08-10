@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Austria Fishing</title>
+    <style>
+        body {
+          font-family: Arial, sans-serif;
+          background-image: url('logo.png');
+          background-size: cover;
+          background-position: center;
+          margin: 0;
+          padding: 20px;
+          color: #333;
+        }
+
+        header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          background-color: #ffffffcc;
+          padding: 15px 20px;
+          border-radius: 12px;
+          backdrop-filter: blur(6px);
+          margin-bottom: 20px;
+        }
+
+        header h1 {
+          margin: 0;
+        }
+
+        #cart-button, #info-button {
+          background-color: #007BFF;
+          border: none;
+          color: white;
+          padding: 10px 18px;
+          border-radius: 25px;
+          cursor: pointer;
+          font-weight: bold;
+          margin-left: 10px;
+        }
+
+        #info-button {
+          background-color: #28a745;
+        }
+
+        #cart-count {
+          position: absolute;
+          top: -8px;
+          right: -8px;
+          background: red;
+          color: white;
+          font-size: 0.8em;
+          font-weight: bold;
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+
+        #search-input {
+          width: 100%;
+          max-width: 400px;
+          padding: 10px 15px;
+          font-size: 1em;
+          border-radius: 25px;
+          border: 2px solid #007BFF;
+          margin-bottom: 25px;
+          outline: none;
+        }
+
+        #products {
+          display: grid;
+          grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+          gap: 25px;
+        }
+
+        .product {
+          background: white;
+          border-radius: 12px;
+          box-shadow: 0 3px 10px rgb(0 0 0 / 0.1);
+          padding: 15px;
+          text-align: center;
+        }
+
+        .product img {
+          max-width: 150px;
+          height: auto;
+          margin-bottom: 12px;
+        }
+
+        .product-name {
+          font-weight: 700;
+          margin-bottom: 8px;
+          font-size: 1.1em;
+        }
+
+        .product-price {
+          color: #007BFF;
+          font-weight: 600;
+          margin-bottom: 12px;
+        }
+
+        .add-btn {
+          background-color: #007BFF;
+          color: white;
+          border: none;
+          padding: 10px 20px;
+          border-radius: 25px;
+          cursor: pointer;
+          font-weight: bold;
+          transition: background-color 0.3s ease;
+        }
+
+        .add-btn:hover {
+          background-color: #0056b3;
+        }
+
+        #cart-modal, #info-modal {
+          display: none;
+          position: fixed;
+          top: 80px;
+          right: 20px;
+          width: 320px;
+          max-height: 400px;
+          overflow-y: auto;
+          background: white;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+          border-radius: 10px;
+          padding: 20px;
+          z-index: 1001;
+        }
+
+        #info-modal {
+          width: 400px;
+          top: 50%;
+          left: 50%;
+          right: auto;
+          transform: translate(-50%, -50%);
+          text-align: center;
+        }
+
+        #cart-modal h3, #info-modal h3 {
+          margin-top: 0;
+          margin-bottom: 15px;
+          border-bottom: 1px solid #ddd;
+          padding-bottom: 8px;
+        }
+
+        #cart-items {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+        }
+
+        #cart-items li {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 12px;
+          border-bottom: 1px solid #eee;
+          padding-bottom: 6px;
+        }
+
+        #cart-items .item-name {
+          flex-grow: 1;
+          text-align: left;
+        }
+
+        #cart-items .item-qty {
+          margin: 0 10px;
+        }
+
+        .remove-btn {
+          background: transparent;
+          border: none;
+          color: red;
+          font-weight: bold;
+          cursor: pointer;
+        }
+
+        #overlay {
+          display: none;
+          position: fixed;
+          top:0; left:0; right:0; bottom:0;
+          background: rgba(0,0,0,0.4);
+          z-index: 1000;
+        }
+
+        #info-close {
+          position: absolute;
+          top: 10px;
+          right: 15px;
+          font-size: 1.5em;
+          color: #999;
+          cursor: pointer;
+        }
+
+        footer {
+          margin-top: 60px;
+          font-size: 0.9em;
+          color: #fff;
+          text-align: center;
+          background-color: rgba(0,0,0,0.3);
+          padding: 20px;
+          border-radius: 12px;
+        }
+
+        a {
+          color: white;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Austria Fishing</h1>
+    <div>
+        <button id="info-button">Info</button>
+        <button id="cart-button">Warenkorb <span id="cart-count">0</span></button>
+    </div>
+</header>
+
+<input type="text" id="search-input" placeholder="Produkte suchen..." />
+
+<section id="products"></section>
+
+<div id="overlay"></div>
+
+<div id="cart-modal">
+    <h3>Warenkorb</h3>
+    <ul id="cart-items"></ul>
+    <p id="cart-empty">Dein Warenkorb ist leer.</p>
+</div>
+
+<div id="info-modal">
+    <div id="info-close">&times;</div>
+    <h3>Über uns</h3>
+    <p>Wir sind zwei 15-Jährige mit einer Idee: eine coole Angel-Website!<br>
+        Dieses Projekt ist aus Leidenschaft fürs Angeln entstanden.<br>
+        Wir freuen uns über jeden Einkauf und jede Unterstützung 🎣</p>
+    <a href="impressum.html">Impressum</a>
+</div>
+
+<footer>
+    <p>Gegründet von Fabian Danbauer und Oscar Haider</p>
+</footer>
+
+<script>
+    const products = [
+      { id: 1, name: "Angel", price: 120, img: "angel1.png" },
+      { id: 2, name: "Köderfisch", price: 4, img: "köder1.png" }
+      { id: 3, name: "kleiner Köderfisch (grün)", price: 3, img: "köder2.png" }
+      { id: 4, name: "kleiner Köderfisch (grau-weiß-orange)", price: 3, img: "köder2.png" }
+
+    ];
+
+    let cart = {};
+
+    const productsContainer = document.getElementById("products");
+    const cartCount = document.getElementById("cart-count");
+    const cartButton = document.getElementById("cart-button");
+    const cartModal = document.getElementById("cart-modal");
+    const cartItemsList = document.getElementById("cart-items");
+    const cartEmptyMsg = document.getElementById("cart-empty");
+    const overlay = document.getElementById("overlay");
+    const searchInput = document.getElementById("search-input");
+    const infoButton = document.getElementById("info-button");
+    const infoModal = document.getElementById("info-modal");
+    const infoClose = document.getElementById("info-close");
+
+    function renderProducts(filter = "") {
+      productsContainer.innerHTML = "";
+      const filtered = products.filter(p => p.name.toLowerCase().includes(filter.toLowerCase()));
+      if(filtered.length === 0) {
+        productsContainer.innerHTML = "<p>Keine Produkte gefunden.</p>";
+        return;
+      }
+      filtered.forEach(p => {
+        const div = document.createElement("div");
+        div.className = "product";
+        div.innerHTML = `
+          <img src="${p.img}" alt="${p.name}">
+          <div class="product-name">${p.name}</div>
+          <div class="product-price">${p.price} €</div>
+          <button class="add-btn" data-id="${p.id}">In den Warenkorb</button>
+        `;
+        productsContainer.appendChild(div);
+      });
+    }
+
+    function updateCartCount() {
+      const total = Object.values(cart).reduce((sum, item) => sum + item.qty, 0);
+      cartCount.textContent = total;
+    }
+
+    function renderCart() {
+      cartItemsList.innerHTML = "";
+      if(Object.keys(cart).length === 0) {
+        cartEmptyMsg.style.display = "block";
+        return;
+      }
+      cartEmptyMsg.style.display = "none";
+      Object.values(cart).forEach(item => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <span class="item-name">${item.name}</span>
+          <span class="item-qty">x${item.qty}</span>
+          <button class="remove-btn" data-id="${item.id}">&times;</button>
+        `;
+        cartItemsList.appendChild(li);
+      });
+    }
+
+    function addToCart(id) {
+      const product = products.find(p => p.id === id);
+      if(!product) return;
+      if(cart[id]) cart[id].qty++;
+      else cart[id] = {...product, qty: 1};
+      updateCartCount();
+    }
+
+    function removeFromCart(id) {
+      if(!cart[id]) return;
+      cart[id].qty--;
+      if(cart[id].qty <= 0) delete cart[id];
+      updateCartCount();
+      renderCart();
+    }
+
+    // Event Listeners
+    productsContainer.addEventListener("click", e => {
+      if(e.target.classList.contains("add-btn")) {
+        const id = Number(e.target.dataset.id);
+        addToCart(id);
+      }
+    });
+
+    cartButton.addEventListener("click", () => {
+      cartModal.style.display = "block";
+      overlay.style.display = "block";
+      renderCart();
+    });
+
+    overlay.addEventListener("click", () => {
+      cartModal.style.display = "none";
+      infoModal.style.display = "none";
+      overlay.style.display = "none";
+    });
+
+    cartItemsList.addEventListener("click", e => {
+      if(e.target.classList.contains("remove-btn")) {
+        const id = Number(e.target.dataset.id);
+        removeFromCart(id);
+      }
+    });
+
+    searchInput.addEventListener("input", () => {
+      renderProducts(searchInput.value);
+    });
+
+    infoButton.addEventListener("click", () => {
+      infoModal.style.display = "block";
+      overlay.style.display = "block";
+    });
+
+    infoClose.addEventListener("click", () => {
+      infoModal.style.display = "none";
+      overlay.style.display = "none";
+    });
+
+    renderProducts();
+    updateCartCount();
+</script>
+</body>
+</html>
